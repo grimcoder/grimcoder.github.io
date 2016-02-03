@@ -1,0 +1,99 @@
+table.mainGrid {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin: 10px;
+}
+td{
+    border: 1px solid black;
+    border-collapse: collapse;
+    width: 40px;
+
+}
+
+tr.border{
+    border: 1px solid black;
+    border-collapse: collapse;
+    height: 40px;
+}
+
+.selected{
+    background-color: rosybrown;
+}
+
+.unselected{
+    background-color: antiquewhite;
+
+}
+
+.mainGrid {
+    position: relative;
+    float: left;
+}
+
+.cell {
+
+    position: relative;
+
+    width: 15px;
+    height: 15px;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%);
+    border-radius: 15px;
+    padding: 4px;
+}
+
+.red {
+    background-color: red;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+.brown {
+    background-color: brown;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.green {
+    background-color: green;
+}
+
+.short {
+    width: 20px;
+    border: 0px;
+}
+
+.short2 {
+    width: 60px;
+    border: 0px;
+}
+
+.short3 {
+    width: 100px;
+    border: 0px;
+}
+
+.scoreTable {
+    margin: 10px;
+}
+
+.levelEditor{
+    margin: 10px;
+}
+
+section {
+    background: black;
+    color: white;
+    border-radius: 1em;
+    padding: 1em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%) }
