@@ -72,6 +72,11 @@ tr.border{
 .short2 {
     width: 60px;
     border: 0px;
+    padding: 3px;
+}
+
+.completedColor {
+    background-color: #ffcccc;
 }
 
 .short3 {
@@ -83,10 +88,16 @@ tr.border{
     margin: 10px;
 }
 
-.levelEditor{
+.shell{
     margin: 10px;
 }
 
+button.center {
+    position: relative;
+    left: 50%;
+
+    transform: translate(-50%)
+}
 section {
     background: black;
     color: white;

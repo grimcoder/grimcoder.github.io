@@ -19037,9 +19037,18 @@ var TwoDots;
         return colors[getRandomInt(0, colors.length)];
     };
     TwoDots.colors = ['red', 'yellow', 'brown', 'blue', 'green'];
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+        return array;
+    }
+    TwoDots.shuffleArray = shuffleArray;
     var Cell = (function () {
         function Cell(x, y) {
-            this.className = 'unselected';
             this.color = getRandomColor(TwoDots.colors);
             this.x = x;
             this.y = y;
@@ -19058,14 +19067,13 @@ var TwoDots;
     var TwoDotsState = (function () {
         function TwoDotsState(width, height) {
             var _this = this;
-            if (width === void 0) { width = 10; }
-            if (height === void 0) { height = 10; }
+            if (width === void 0) { width = 5; }
+            if (height === void 0) { height = 5; }
             this.width = width;
             this.height = height;
             this.Rules = new Rules();
             this.mode = 'board';
             this.Grid = [];
-            this.startDrag = false;
             this.turns = 0;
             this.score = TwoDots.colors.reduce(function (total, color) {
                 total[color] = 0;
@@ -19101,8 +19109,39 @@ var Hello = React.createClass({displayName: "Hello",
     path: [],
     getInitialState: function () {
         return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
+        while (this.needsShuffling()) {
+            this.shuffleBoard();
+        }
     },
     needsShuffling: function () {
+        var thisFlatArray = this.thisArray();
+        for (var cell in thisFlatArray) {
+            if (thisFlatArray.filter(function (c) {
+                return !(c.x == thisFlatArray[cell].x && c.y == thisFlatArray[cell].y)
+                    && (Math.abs(c.x - thisFlatArray[cell].x) + Math.abs(c.y - thisFlatArray[cell].y) < 2)
+                    && thisFlatArray[cell].color == c.color;
+            }).length > 0) {
+                console.log('does not need shuffling');
+                this.state.mode = 'board';
+                return false;
+            }
+        }
+        console.log('needs shuffling');
+        this.state.mode = 'board needsShuffling';
+        this.setState(this.state);
+        return true;
+    },
+    shuffleBoard: function () {
+        var thisFlatArray = TwoDotsState_1.TwoDots.shuffleArray(this.thisArray());
+        for (var x = 0; x < this.state.width; x++) {
+            for (var y = 0; y < this.state.height; y++) {
+                this.state.Grid[y][x] = thisFlatArray.pop();
+                this.state.Grid[y][x].x = x;
+                this.state.Grid[y][x].y = y;
+            }
+        }
+        this.setState(this.state);
+        this.needsShuffling();
     },
     thisArray: function () {
         return [].concat.apply([], this.state.Grid);
@@ -19149,7 +19188,7 @@ var Hello = React.createClass({displayName: "Hello",
     checkResults: function (state) {
         //have we lost?
         if (state.Rules.maxTurns < state.turns) {
-            this.state.mode = 'message';
+            this.state.mode = 'board message';
             this.state.message = 'You lost!!!';
             this.setState(this.state);
             return;
@@ -19158,19 +19197,18 @@ var Hello = React.createClass({displayName: "Hello",
         if (Object.keys(state.Rules.amountToCollect).filter(function (key, i) {
             return state.Rules.amountToCollect[key] > state.score[key];
         }).length == 0) {
-            this.state.mode = 'message';
+            this.state.mode = 'board message';
             this.state.message = 'You won!!!';
             this.setState(this.state);
         }
     },
     onMouseLeave: function () {
-        this.state.startDrag = false;
         this.path = [];
         this.setState(this.state);
     },
     handleMouseUp: function () {
-        this.state.startDrag = false;
         this.removeDots(this.state);
+        this.needsShuffling();
         this.path = [];
         this.setState(this.state);
         this.checkResults(this.state);
@@ -19215,15 +19253,12 @@ var Hello = React.createClass({displayName: "Hello",
         this.state.mode = 'board';
         this.setState(this.state);
     },
-    updateLevel: function (width, height, MaxTurns, limits) {
-        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
-        newState.Rules.maxTurns = Number(MaxTurns);
-        newState.Rules.amountToCollect = limits;
+    updateLevel: function (newState) {
         newState.mode = 'board';
         this.setState(newState);
     },
     startNew: function () {
-        var newState = new TwoDotsState_1.TwoDots.TwoDotsState();
+        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.state.width), Number(this.state.height));
         newState.mode = 'board';
         this.setState(newState);
     },
@@ -19232,17 +19267,30 @@ var Hello = React.createClass({displayName: "Hello",
         var isLoop = this.isLoop();
         var lastColor = this.path.length > 0 ? this.path[this.path.length - 1].color : undefined;
         var state = this.state;
+        var message;
         var body;
-        if (this.state.mode == 'editor') {
-            body = React.createElement("div", null, 
-                    React.createElement("button", {onClick: this.ShowBoard, className: "btn btn-info"}, "Show board"), 
-                    React.createElement(levelEditor_1.default, {gridState: state, rules: state.Rules, score: state.score, updateLevel: this.updateLevel})
+        if (this.state.mode.indexOf('message') > -1) {
+            message = React.createElement("section", null, 
+                    React.createElement("h1", null, this.state.message), 
+                    React.createElement("button", {className: "btn btn-danger center", onClick: this.startNew}, "Start new")
                 );
         }
-        else if (this.state.mode == 'board') {
+        if (this.state.mode.indexOf('needsShuffling') > -1) {
+            message = React.createElement("section", null, 
+                    React.createElement("h1", null, "Needs shuffling"), 
+                    React.createElement("button", {className: "btn btn-danger center", onClick: this.shuffleBoard}, "Shuffle")
+                );
+        }
+        if (this.state.mode.indexOf('editor') > -1) {
+            body = React.createElement("div", null, 
+                    React.createElement("button", {onClick: this.ShowBoard, className: "btn btn-info"}, "Show board"), 
+                    React.createElement(levelEditor_1.default, {gridState: state, updateLevel: this.updateLevel})
+                );
+        }
+        if (this.state.mode.indexOf('board') > -1) {
             body = React.createElement("div", null, 
                     React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
-                    React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+                        React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
 
                     React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
                         React.createElement("tbody", null, 
@@ -19262,23 +19310,18 @@ var Hello = React.createClass({displayName: "Hello",
                             );
             })
                         )
-                    )
+                    ), 
+                    message
                 );
         }
-        else if (this.state.mode == 'message') {
-            body = React.createElement("section", null, 
-                    React.createElement("h1", null, this.state.message), 
-                    React.createElement("button", {className: "btn btn-danger", onClick: this.startNew}, "Start new")
-                );
-        }
-        return React.createElement("div", null, 
+        return React.createElement("div", {className: "shell"}, 
 
                 body
 
             );
     }
 });
-ReactDOM.render(React.createElement(Hello, {name: "World", width: "10", height: "8"}), document.getElementById('container'));
+ReactDOM.render(React.createElement(Hello, {name: "World", width: "3", height: "3"}), document.getElementById('container'));
 
 },{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19293,66 +19336,78 @@ var LevelEditor = (function (_super) {
     __extends(LevelEditor, _super);
     function LevelEditor(props) {
         _super.call(this, props);
-        var rules = this.props.rules;
         var state = this.props.gridState;
-        var amountToCollect = rules.amountToCollect;
         this.changed = this.changed.bind(this);
         this.update = this.update.bind(this);
         this.changedcolorRules = this.changedcolorRules.bind(this);
-        this.state = {
-            amountToCollect: amountToCollect,
-            width: state.width,
-            height: state.height,
-            MaxTurns: rules.maxTurns };
+        this.changeColor = this.changeColor.bind(this);
+        this.state = state;
     }
     LevelEditor.prototype.changedcolorRules = function () {
-        var limits = {};
+        var _this = this;
         var colorLimit = this.refs['colorRules'].value;
         TwoDotsState_1.TwoDots.colors.slice(0, Number(colorLimit)).map(function (color) {
-            limits[color] = 5;
+            _this.state.Rules.amountToCollect[color] = 5;
         });
-        this.setState({ amountToCollect: limits });
+        this.setState(this.state);
     };
     LevelEditor.prototype.changed = function () {
         var width = (this.refs['width']).value;
         var height = this.refs['height'].value;
         var MaxTurns = this.refs['MaxTurns'].value;
-        var limits = {};
-        for (var color in this.state.amountToCollect) {
-            limits[color] = this.refs[color].value;
+        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(width), Number(height));
+        newState.Rules.maxTurns = Number(MaxTurns);
+        for (var color in this.state.Rules.amountToCollect) {
+            newState.Rules.amountToCollect[color] = Number(this.refs[color].value);
         }
-        this.setState({
-            width: width,
-            height: height,
-            MaxTurns: MaxTurns,
-            amountToCollect: limits
-        });
+        this.setState(newState);
+    };
+    LevelEditor.prototype.changeColor = function (row, coll) {
+        var nextColor = (TwoDotsState_1.TwoDots.colors.indexOf(this.state.Grid[row][coll].color) + 1) % TwoDotsState_1.TwoDots.colors.length;
+        this.state.Grid[row][coll].color = TwoDotsState_1.TwoDots.colors[nextColor];
+        this.setState(this.state);
     };
     LevelEditor.prototype.update = function () {
-        var width = (this.refs['width']).value;
-        var height = this.refs['height'].value;
-        var MaxTurns = this.refs['MaxTurns'].value;
-        var limits = {};
-        for (var color in this.state.amountToCollect) {
-            limits[color] = this.refs[color].value;
-        }
         var updateLevel = this.props.updateLevel;
-        updateLevel(width, height, MaxTurns, limits);
+        updateLevel(this.state);
     };
     LevelEditor.prototype.render = function () {
-        var colorRules = Object.keys(this.state.amountToCollect).length.toString();
-        var limits = this.state.amountToCollect;
+        var _this = this;
+        var colorRules = Object.keys(this.state.Rules.amountToCollect).length.toString();
+        var limits = this.state.Rules.amountToCollect;
         var width = this.state.width;
         var height = this.state.height;
-        var MaxTurns = this.state.MaxTurns;
+        var MaxTurns = this.state.Rules.maxTurns;
         var selectedColors = Object.keys(limits);
         var colorRows = [];
         for (var c in selectedColors) {
             colorRows.push(React.createElement("tr", {key: selectedColors[c]}, React.createElement("td", {className: "short"}, React.createElement("div", {className: selectedColors[c] + ' cell'})), React.createElement("td", {className: "short2"}, 
                 React.createElement("input", {className: "short2", onChange: this.changed, type: "text", ref: selectedColors[c], value: limits[selectedColors[c]]}), " ")));
         }
+        var body;
+        var state = this.state;
+        body = React.createElement("div", null, 
+
+
+            React.createElement("table", {className: "mainGrid"}, 
+                React.createElement("tbody", null, 
+                    Array.apply(0, Array(state.height)).map(function (el, row) {
+            return React.createElement("tr", {className: "border", key: row}, 
+
+                        Array.apply(0, Array(state.width)).map(function (el1, coll) {
+                return React.createElement("td", {key: coll, className: "unselected", onClick: _this.changeColor.bind(null, row, coll)}, 
+
+                            React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
+                        );
+            })
+                    );
+        })
+                )
+            )
+
+        );
         return React.createElement("div", null, 
-            React.createElement("div", {className: "levelEditor h4"}, "Level editor"), 
+            React.createElement("div", {className: "h4"}, "Level editor"), 
 
             React.createElement("div", null, 
 
@@ -19374,6 +19429,7 @@ var LevelEditor = (function (_super) {
                 )
             ), 
             React.createElement("br", null), 
+                body, 
                 React.createElement("button", {onClick: this.update, className: "btn"}, "Update")
         );
     };
@@ -19409,9 +19465,9 @@ var ScoreTable = (function (_super) {
             //var short = key + " short"
             var key2 = key + "value";
             cells.push(React.createElement("td", {className: "short", key: key}, React.createElement("div", {className: key + ' cell'})));
-            cells.push(React.createElement("td", {className: "short2", key: key2}, score[key] + ' of ' + rules.amountToCollect[key]));
+            cells.push(React.createElement("td", {className: 'short2 ' + (score[key] >= rules.amountToCollect[key] ? 'completedColor' : ''), key: key2}, score[key] + ' / ' + rules.amountToCollect[key]));
         });
-        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' of ' + maxTurns, " "));
+        cells.push(React.createElement("td", {className: "short3", key: "turns"}, " ", 'Turns ' + turns + ' / ' + maxTurns, " "));
         return (React.createElement("table", {className: "scoreTable"}, React.createElement("tbody", null, React.createElement("tr", null, 
                 cells
                 ))));
