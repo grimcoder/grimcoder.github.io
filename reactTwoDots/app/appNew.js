@@ -19115,12 +19115,18 @@ var TwoDots;
 var React = require('react');
 var ReactDOM = require('react-dom');
 var scoreTable_1 = require('./scoreTable');
+var turnsLeft_1 = require('./turnsLeft');
 var levelEditor_1 = require('./levelEditor');
+var levels_1 = require('./levels');
+var home_1 = require('./home');
+var selectLevel_1 = require('./selectLevel');
 var TwoDotsState_1 = require('./TwoDotsState');
-var Hello = React.createClass({displayName: "Hello",
+var ConnectDots = React.createClass({displayName: "ConnectDots",
     path: [],
     getInitialState: function () {
-        return new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.props.width), Number(this.props.height));
+        var state = new TwoDotsState_1.TwoDots.TwoDotsState();
+        state.mode = 'home';
+        return state;
     },
     needsShuffling: function () {
         var thisFlatArray = this.thisArray();
@@ -19198,7 +19204,7 @@ var Hello = React.createClass({displayName: "Hello",
         //have we lost?
         if (state.Rules.maxTurns < state.turns) {
             this.state.mode = 'board message';
-            this.state.message = 'You lost!!!';
+            this.state.message = 'You lost!';
             this.setState(this.state);
             return;
         }
@@ -19206,9 +19212,17 @@ var Hello = React.createClass({displayName: "Hello",
         if (Object.keys(state.Rules.amountToCollect).filter(function (key, i) {
             return state.Rules.amountToCollect[key] > state.score[key];
         }).length == 0) {
-            this.state.mode = 'board message';
-            this.state.message = 'You won!!!';
-            this.setState(this.state);
+            if (state.levelSolved < levels_1.Levels.levels.length - 1) {
+                this.state.levelSolved++;
+                this.state.mode = 'board message';
+                this.state.message = 'Next level!!!';
+                this.setState(this.state);
+            }
+            else {
+                this.state.mode = 'board endOfGame';
+                this.state.message = 'You won!!!';
+                this.setState(this.state);
+            }
         }
     },
     onMouseLeave: function () {
@@ -19267,9 +19281,21 @@ var Hello = React.createClass({displayName: "Hello",
         this.setState(newState);
     },
     startNew: function () {
-        var newState = new TwoDotsState_1.TwoDots.TwoDotsState(Number(this.state.width), Number(this.state.height));
-        newState.mode = 'board';
-        this.setState(newState);
+        var level = this.state.levelSolved;
+        this.state = TwoDotsState_1.TwoDots.makeCopy(levels_1.Levels.levels[level]);
+        this.state.mode = 'board';
+        this.state.levelSolved = level;
+        this.setState(this.state);
+    },
+    selectLevel: function () {
+        this.state.mode = 'selectLevel';
+        this.setState(this.state);
+    },
+    levelSelected: function (level) {
+        this.state = TwoDotsState_1.TwoDots.makeCopy(levels_1.Levels.levels[level]);
+        this.state.levelSolved = level;
+        this.state.mode = 'board';
+        this.setState(this.state);
     },
     render: function () {
         var _this = this;
@@ -19278,16 +19304,28 @@ var Hello = React.createClass({displayName: "Hello",
         var state = this.state;
         var message;
         var body;
+        if (this.state.mode.indexOf('endOfGame') > -1) {
+            message = React.createElement("div", {className: "message"}, 
+                    React.createElement("div", {className: "title"}, "You won"), 
+                    React.createElement("div", {className: "button"}, 
+                        React.createElement("div", {onClick: this.selectLevel}, "Start new")
+                    )
+                );
+        }
         if (this.state.mode.indexOf('message') > -1) {
-            message = React.createElement("section", null, 
-                    React.createElement("h1", null, this.state.message), 
-                    React.createElement("button", {className: "btn btn-danger center", onClick: this.startNew}, "Start new")
+            message = React.createElement("div", {className: "message"}, 
+                    React.createElement("div", {className: "title"}, this.state.message), 
+                    React.createElement("div", {className: "button"}, 
+                        React.createElement("div", {onClick: this.startNew}, "Start new")
+                    )
                 );
         }
         if (this.state.mode.indexOf('needsShuffling') > -1) {
-            message = React.createElement("section", null, 
-                    React.createElement("h1", null, "Needs shuffling"), 
-                    React.createElement("button", {className: "btn btn-danger center", onClick: this.shuffleBoard}, "Shuffle")
+            message = React.createElement("div", {className: "message"}, 
+                    React.createElement("div", {className: "title"}, "Needs shuffling."), 
+                    React.createElement("div", {className: "button"}, 
+                        React.createElement("div", {onClick: this.shuffleBoard}, "SHUFFLE")
+                    )
                 );
         }
         if (this.state.mode.indexOf('editor') > -1) {
@@ -19297,42 +19335,85 @@ var Hello = React.createClass({displayName: "Hello",
                 );
         }
         if (this.state.mode.indexOf('board') > -1) {
-            body = React.createElement("div", null, 
-                    React.createElement("button", {onClick: this.ShowLevelEditor, className: "btn btn-info"}, "Level editor"), 
-                        React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
-
-                    React.createElement("table", {className: "mainGrid", onMouseLeave: this.onMouseLeave}, 
-                        React.createElement("tbody", null, 
-                            Array.apply(0, Array(state.height)).map(function (el, row) {
-                return React.createElement("tr", {className: "border", key: row}, 
-
-                                Array.apply(0, Array(state.width)).map(function (el1, coll) {
-                    return React.createElement("td", {key: coll, className: _this.path.filter(function (cell) {
-                        return (cell.x == coll && cell.y == row)
-                            || (isLoop && state.Grid[row][coll].color == lastColor);
-                    }).length == 0
-                        ? 'unselected' : 'selected', onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll)}, 
-
-                                    React.createElement("div", {className: state.Grid[row][coll].color + ' cell'})
-                                );
-                })
-                            );
-            })
-                        )
-                    ), 
-                    message
-                );
+            var circles = [];
+            var path = [];
+            Array.apply(0, Array(state.height)).map(function (el, row) {
+                Array.apply(0, Array(state.width)).map(function (el1, coll) {
+                    var color = TwoDotsState_1.TwoDots.colorsTable[state.Grid[row][coll].color];
+                    color = (isLoop && TwoDotsState_1.TwoDots.colorsTable[lastColor] == color) ? TwoDotsState_1.TwoDots.colorsTable['grey'] : color;
+                    circles.push(React.createElement("circle", {key: 'coll' + coll + 'row' + row, cx: 10 + coll * 40, cy: 10 + row * 40, r: "10", strokeWidth: "0", onMouseUp: _this.handleMouseUp, onMouseOver: _this.handleMouseOver.bind(null, row, coll, event), onMouseDown: _this.handleMouseDown.bind(null, row, coll), fill: color}));
+                });
+            });
+            this.path.map(function (cell, i) {
+                if (i >= _this.path.length - 1)
+                    return;
+                var nextCell = _this.path[i + 1];
+                var color = !isLoop ? TwoDotsState_1.TwoDots.colorsTable[state.Grid[cell.y][cell.x].color] : TwoDotsState_1.TwoDots.colorsTable['grey'];
+                var X1 = 10 + 40 * cell.x;
+                var X2 = 10 + 40 * nextCell.x;
+                var Y1 = 10 + 40 * cell.y;
+                var Y2 = 10 + 40 * nextCell.y;
+                path.push(React.createElement("path", {strokeWidth: "5", key: i, stroke: color, d: 'M ' + X1 + ' ' + Y1
+                    + ' L ' + X2 + ' ' + Y2}));
+            });
+            var svgWidth = 40 * state.Grid[0].length - 20;
+            var svgHeight = 40 * state.Grid.length - 20;
+            body = React.createElement("div", {className: "main"}, 
+                        React.createElement("img", {src: "images/Playground%20bkg.png"}), 
+                        React.createElement("div", {className: "backbutton", onClick: this.selectLevel}), 
+                        React.createElement("div", null, 
+                            React.createElement(scoreTable_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score}), 
+                            React.createElement("div", {className: "grid"}, 
+                                React.createElement("svg", {height: svgHeight, width: svgWidth}, 
+                                    path, 
+                                    circles
+                                )
+                            ), 
+                            message
+                        ), 
+                        React.createElement(turnsLeft_1.default, {turns: state.turns, maxTurns: state.Rules.maxTurns, rules: state.Rules, score: state.score})
+                    );
         }
-        return React.createElement("div", {className: "shell"}, 
-
-                body
-
-            );
+        if (this.state.mode.indexOf('selectLevel') > -1) {
+            body = React.createElement(selectLevel_1.SelectLevel, {levelSelected: this.levelSelected});
+        }
+        if (this.state.mode.indexOf('home') > -1) {
+            body = React.createElement(home_1.Home, {selectLevel: this.selectLevel, selectEditor: this.ShowLevelEditor});
+        }
+        return body;
     }
 });
-ReactDOM.render(React.createElement(Hello, {name: "World", width: "3", height: "3"}), document.getElementById('container'));
+ReactDOM.render(React.createElement(ConnectDots, {name: "World", width: "3", height: "3"}), document.getElementById('container'));
 
-},{"./TwoDotsState":159,"./levelEditor":161,"./scoreTable":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
+},{"./TwoDotsState":159,"./home":161,"./levelEditor":162,"./levels":163,"./scoreTable":164,"./selectLevel":165,"./turnsLeft":166,"react":158,"react-dom":2}],161:[function(require,module,exports){
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var Home = (function (_super) {
+    __extends(Home, _super);
+    function Home() {
+        _super.apply(this, arguments);
+    }
+    Home.prototype.render = function () {
+        return React.createElement("div", {className: "main"}, 
+            React.createElement("img", {src: "images/Splash%20screen%20no%20buttons.png"}), 
+
+                React.createElement("div", {onClick: this.props.selectLevel, className: "playbutton"}), 
+
+                React.createElement("div", {onClick: this.props.selectEditor, className: "editorbutton"})
+
+        );
+    };
+    return Home;
+})(React.Component);
+exports.Home = Home;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = Home;
+
+},{"react":158}],162:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -19449,7 +19530,64 @@ exports.LevelEditor = LevelEditor;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = LevelEditor;
 
-},{"./TwoDotsState":159,"react":158}],162:[function(require,module,exports){
+},{"./TwoDotsState":159,"react":158}],163:[function(require,module,exports){
+var Levels;
+(function (Levels) {
+    var level0 = {
+        "width": 3,
+        "height": 3,
+        "Rules": { "maxTurns": 5, "amountToCollect": { "red": 2, "yellow": 2, "blue": 2, "brown": 2 } },
+        "mode": "editor",
+        "Grid": [[{ "color": "blue", "x": 0, "y": 0 }, { "color": "blue", "x": 1, "y": 0 }, {
+                    "color": "blue",
+                    "x": 2,
+                    "y": 0
+                }], [{ "color": "blue", "x": 0, "y": 1 }, { "color": "blue", "x": 1, "y": 1 }, {
+                    "color": "blue",
+                    "x": 2,
+                    "y": 1
+                }], [{ "color": "blue", "x": 0, "y": 2 }, { "color": "blue", "x": 1, "y": 2 }, { "color": "blue", "x": 2, "y": 2 }]],
+        "turns": 0,
+        "score": { "red": 0, "yellow": 0, "brown": 0, "blue": 0, "green": 0 }
+    };
+    var level1 = {
+        "width": 3,
+        "height": 6,
+        "Rules": { "maxTurns": 10, "amountToCollect": { "red": 2, "yellow": 2, "blue": 2, "brown": 2 } },
+        "mode": "editor",
+        "Grid": [[{ "color": "red", "x": 0, "y": 0 }, { "color": "red", "x": 1, "y": 0 }, {
+                    "color": "red",
+                    "x": 2,
+                    "y": 0
+                }],
+            [{ "color": "red", "x": 0, "y": 1 }, { "color": "red", "x": 1, "y": 1 }, {
+                    "color": "red",
+                    "x": 2,
+                    "y": 1
+                }], [{ "color": "yellow", "x": 0, "y": 2 }, { "color": "yellow", "x": 1, "y": 2 }, {
+                    "color": "yellow",
+                    "x": 2,
+                    "y": 2
+                }], [{ "color": "yellow", "x": 0, "y": 3 }, { "color": "yellow", "x": 1, "y": 3 }, {
+                    "color": "yellow",
+                    "x": 2,
+                    "y": 3
+                }], [{ "color": "blue", "x": 0, "y": 4 }, { "color": "blue", "x": 1, "y": 4 }, {
+                    "color": "blue",
+                    "x": 2,
+                    "y": 4
+                }], [{ "color": "blue", "x": 0, "y": 5 }, { "color": "blue", "x": 1, "y": 5 }, {
+                    "color": "blue",
+                    "x": 2,
+                    "y": 5
+                }]],
+        "turns": 0,
+        "score": { "red": 0, "yellow": 0, "brown": 0, "blue": 0, "green": 0 }
+    };
+    Levels.levels = [level0, level1];
+})(Levels = exports.Levels || (exports.Levels = {}));
+
+},{}],164:[function(require,module,exports){
 /**
  * Created by taraskovtun on 1/29/16.
  */
@@ -19507,4 +19645,73 @@ var ScoreTable = (function (_super) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = ScoreTable;
 
-},{"./TwoDotsState":159,"react":158}]},{},[160]);
+},{"./TwoDotsState":159,"react":158}],165:[function(require,module,exports){
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var levels_1 = require('./levels');
+var SelectLevel = (function (_super) {
+    __extends(SelectLevel, _super);
+    function SelectLevel(props) {
+        _super.call(this, props);
+        this.levelSelected = this.levelSelected.bind(this);
+    }
+    SelectLevel.prototype.levelSelected = function (level) {
+        this.props.levelSelected(level);
+    };
+    SelectLevel.prototype.render = function () {
+        var levels = [];
+        for (var i in levels_1.Levels.levels) {
+            var x = 26 + i * 72;
+            levels.push(React.createElement("circle", {key: i, onClick: this.levelSelected.bind(this, i), cx: x, cy: "26", r: "24", stroke: "white", strokeWidth: "4", fill: "black"}));
+            levels.push(React.createElement("text", {onClick: this.levelSelected.bind(this, i), x: x, y: "32", key: 'text' + i, fill: "white", fontFamily: "Verdana", textAnchor: "middle", "alignment-baseline": "middle", fontSize: "18px", "font-weight": "bold"}, Number(i) + 1
+                ));
+        }
+        return React.createElement("div", {className: "main"}, 
+            React.createElement("img", {src: "images/exportlevelbkg.png"}), 
+                React.createElement("div", {className: "backbutton"}), 
+                React.createElement("div", {className: "levels"}, 
+
+                        React.createElement("svg", null, 
+                                levels
+                        )
+
+                )
+        );
+    };
+    return SelectLevel;
+})(React.Component);
+exports.SelectLevel = SelectLevel;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = SelectLevel;
+
+},{"./levels":163,"react":158}],166:[function(require,module,exports){
+/**
+ * Created by taraskovtun on 1/29/16.
+ */
+/// <reference path='../typings/tsd.d.ts'/>
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var React = require('react');
+var TurnsLeft = (function (_super) {
+    __extends(TurnsLeft, _super);
+    function TurnsLeft() {
+        _super.apply(this, arguments);
+    }
+    TurnsLeft.prototype.render = function () {
+        var turns = this.props.turns;
+        var maxTurns = this.props.maxTurns;
+        return (React.createElement("div", {className: "turns"}, 'Turns ' + turns + ' / ' + maxTurns));
+    };
+    return TurnsLeft;
+})(React.Component);
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = TurnsLeft;
+
+},{"react":158}]},{},[160]);

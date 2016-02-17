@@ -1,0 +1,217 @@
+body {
+    margin: 0;
+    background-color: #958138;
+}
+
+div.main {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+}
+
+div.playbutton {
+    position: absolute;
+    left: 22px;
+    top: 483px;
+    background: url("../images/playbutton.png");
+    width: 331px;
+    height: 56px;
+}
+
+div.editorbutton {
+    position: absolute;
+    left: 22px;
+    top: 559px;
+    background: url("../images/leveleditor.png");
+    width: 331px;
+    height: 56px;
+}
+
+div.backbutton {
+    position: absolute;
+    left: 20px;
+    top: 23px;
+    background: url("../images/backbutton.png");
+    width: 11px;
+    height: 20px;
+}
+
+div.levels {
+    position: absolute;
+    left: 52px;
+    top: 224px;
+    width: 272px;
+    height: 219px;
+}
+
+div.levels tr {
+    height: 80px;
+}
+
+div.levels td {
+    width: 70px;
+}
+
+div.levels div {
+    width: 53px;
+    height: 53px;
+}
+
+div.levels div svg {
+    float: left;
+    position: relative;
+    width: 53px;
+    height: 53px;
+}
+
+div.levels div p{
+    z-index: 2;
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+    top: 50%;
+    position: relative;
+    transform: translateY(-50%);
+    font-family: Montserrat-Bold, Verdana;
+    font-size: 18px;
+    color: #FFFFFF;
+    line-height: 22px;
+}
+
+div.levels div.level {
+    'background: url("../images/leveloval.png");
+}
+
+div.levels div.levellocked {
+    'background: url("../images/levelovallocked.png");
+}
+
+div.levels div.levellocked p{
+    font-family: Montserrat-Bold, Verdana;
+    font-size: 18px;
+    color: #6B6B6B;
+    line-height: 22px;
+}
+
+div.score {
+    position: absolute;
+    left: 185px;
+    top: 78px;
+    transform: translateX(-50%);
+    height: 48px;
+}
+
+div.score table{
+    width: 340px;
+}
+div.score tr{
+    height: 24px;
+    font-family: Montserrat-Bold, Verdana;
+    font-size: 18px;
+    color: #FFFFFF;
+    line-height: 22px;
+
+}
+
+div.score td{
+
+    text-align: center;
+}
+
+div.dot{
+    width: 20px;
+    height: 20px;
+    margin: 0 auto;
+}
+
+div.red {background: url("../images/red.png");  }
+div.yellow {background: url("../images/yellow.png");  }
+div.blue {background: url("../images/blue.png");  }
+div.green {background: url("../images/green.png");  }
+div.orange {background: url("../images/orange.png");  }
+
+div.turns {
+    width: 100%;
+    position: absolute;
+    top: 620px;
+    text-align: center;
+    font-family: Montserrat-Bold, Verdana;
+    font-size: 18px;
+    color: #FFF;
+    line-height: 22px;
+}
+
+div.grid{
+    position: absolute;
+    left: 190px;
+    top: 200px;
+    transform: translateX(-50%);
+}
+
+div.border {
+    position: absolute;
+    top: 142px;
+    width: 366px;
+    height: 435px;
+    border: 5px solid #F5A623;
+}
+
+
+div.message {
+    position: absolute;
+    opacity: 0.9;
+    /* Rectangle 28: */
+    background: #67220C;
+    border-radius: 18px;
+    /* It needs shuffling: */
+    font-family: Montserrat-Bold, Verdana;
+    font-size: 18px;
+    color: #FFFFFF;
+    line-height: 22px;
+    width: 287px;
+    height: 147px;
+    left: 45px;
+    top: 260px;
+}
+
+div.message div.title{
+    position: relative;
+    top: 25px;
+    width: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    -webkit-transform: translateX(-50%);
+}
+
+div.message div.button{
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    -webkit-transform: translateY(-50%) translateX(-50%);
+    left: 50%;
+    width: 188px;
+    height: 56px;
+    background: #F96332;
+    border-radius: 100px;
+    /* Shuffle: */
+    font-family: Montserrat-Bold, Verdana;
+    font-size: 17.78px;
+    color: #FFFFFF;
+    line-height: 21px;
+    text-align: center;
+}
+
+div.message div.button div{
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+
+
+div.grid tr{height: 40px}
+div.grid td{width: 40px}
+
