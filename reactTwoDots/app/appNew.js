@@ -19128,6 +19128,11 @@ var ConnectDots = React.createClass({displayName: "ConnectDots",
         state.mode = 'home';
         return state;
     },
+    goHome: function () {
+        this.state = new TwoDotsState_1.TwoDots.TwoDotsState();
+        this.state.mode = 'home';
+        this.setState(this.state);
+    },
     needsShuffling: function () {
         var thisFlatArray = this.thisArray();
         for (var cell in thisFlatArray) {
@@ -19375,7 +19380,7 @@ var ConnectDots = React.createClass({displayName: "ConnectDots",
                     );
         }
         if (this.state.mode.indexOf('selectLevel') > -1) {
-            body = React.createElement(selectLevel_1.SelectLevel, {levelSelected: this.levelSelected});
+            body = React.createElement(selectLevel_1.SelectLevel, {sendHome: this.goHome, levelSelected: this.levelSelected});
         }
         if (this.state.mode.indexOf('home') > -1) {
             body = React.createElement(home_1.Home, {selectLevel: this.selectLevel, selectEditor: this.ShowLevelEditor});
@@ -19658,9 +19663,13 @@ var SelectLevel = (function (_super) {
     function SelectLevel(props) {
         _super.call(this, props);
         this.levelSelected = this.levelSelected.bind(this);
+        this.goHome = this.goHome.bind(this);
     }
     SelectLevel.prototype.levelSelected = function (level) {
         this.props.levelSelected(level);
+    };
+    SelectLevel.prototype.goHome = function () {
+        this.props.sendHome();
     };
     SelectLevel.prototype.render = function () {
         var levels = [];
@@ -19672,7 +19681,7 @@ var SelectLevel = (function (_super) {
         }
         return React.createElement("div", {className: "main"}, 
             React.createElement("img", {src: "images/exportlevelbkg.png"}), 
-                React.createElement("div", {className: "backbutton"}), 
+                React.createElement("div", {className: "backbutton", onClick: this.goHome}), 
                 React.createElement("div", {className: "levels"}, 
 
                         React.createElement("svg", null, 
