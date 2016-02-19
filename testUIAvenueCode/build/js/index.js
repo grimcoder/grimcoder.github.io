@@ -29585,13 +29585,9 @@ module.exports = require('./lib/React');
  */
 
 var React = require('react');
-var ReactDOM = require('react-dom');
 var Gmaps = require('react-gmaps').Gmaps
-var Marker = require('react-gmaps').Marker
 var InfoWindow = require('react-gmaps').InfoWindow
-var Circle = require('react-gmaps').Circle
 var $ = require('jquery')
-
 
 const coords = {
     lat: 31.5258541,
@@ -29602,7 +29598,7 @@ const regex = new RegExp('^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-z
 
 var result;
 
-const App = React.createClass({displayName: "App",
+module.exports = React.createClass({displayName: "exports",
 
     getInitialState(){
         return {domain: undefined, myLocation: undefined, domainDisabled: 'disabled'}
@@ -29612,11 +29608,12 @@ const App = React.createClass({displayName: "App",
         var domainname = this.refs.domain.value
         var domainDisabled = 'disabled'
         if (result = regex.exec(domainname)) {
-            console.log(result)
-            domainDisabled = ''
 
+            domainDisabled = ''
         }
+
         this.setState({domainDisabled: domainDisabled})
+
     },
     locate: function () {
 
@@ -29670,28 +29667,12 @@ const App = React.createClass({displayName: "App",
 
     render() {
 
-        var example = {
-            "as": "AS7922 Comcast Cable Communications, Inc.",
-            "city": "Oakland",
-            "country": "United States",
-            "countryCode": "US",
-            "isp": "Comcast Cable",
-            "lat": 37.8309,
-            "lon": -122.2196,
-            "org": "Comcast Cable",
-            "query": "98.210.29.69",
-            "region": "CA",
-            "regionName": "California",
-            "status": "success",
-            "timezone": "America/Los_Angeles",
-            "zip": "94611"
-        }
         var markers = []
         if (this.state.domain) {
 
             var content =
                 '<div><b>' + this.state.domain.domainname +'</b></div>'+
-                '<table align="center" class="empty">'+
+                '<table align="center"  className="domainLocation" class="empty">'+
                 '<tbody>'+
                 '<tr>'+
                 '<td class="field_name">IP</td>'+
@@ -29724,7 +29705,7 @@ const App = React.createClass({displayName: "App",
                 '</tbody>'+
                 '</table>'
 
-            markers.push(React.createElement(InfoWindow, {title: "domain", content: content, 
+            markers.push(React.createElement(InfoWindow, {key: "domain", title: "domain", content: content, 
                                      lat: this.state.domain.lat, 
                                      lng: this.state.domain.lon}
             ))
@@ -29734,7 +29715,7 @@ const App = React.createClass({displayName: "App",
 
             var content =
                 '<div><b>My location</b></div>'+
-                '<table align="center" class="empty">'+
+                '<table className="myLocation" align="center" class="empty">'+
                 '<tbody>'+
                 '<tr>'+
                 '<td class="field_name">IP</td>'+
@@ -29768,7 +29749,7 @@ const App = React.createClass({displayName: "App",
                 '</table>'
 
 
-            markers.push(React.createElement(InfoWindow, {title: "Home", label: "Home", content: content, 
+            markers.push(React.createElement(InfoWindow, {key: "domain", title: "Home", label: "Home", content: content, 
                                      lat: this.state.myLocation.lat, 
                                      lng: this.state.myLocation.lon}
             ))
@@ -29782,27 +29763,35 @@ const App = React.createClass({displayName: "App",
                        zoom: 2, 
                        params: {v: '3.exp'}, 
                        onMapCreated: this.onMapCreated}, 
-
                     markers
-
                 ), 
 
-
             React.createElement("span", {className: "controls"}, 
-                React.createElement("input", {onChange: this.domainChanged, ref: "domain", autofocus: "autofocus", className: "search bu", 
-                       type: "text", placeholder: "website"}), 
-                    React.createElement("button", {onClick: this.locate, className: "btn bg-primary bu " + this.state.domainDisabled}, "Locate"
-                    ), 
 
-                    React.createElement("button", {onClick: this.locateMe, className: "btn bg-info bu"}, "My location"), 
-                    React.createElement("button", {onClick: this.reset, className: "btn bg-info bu"}, "Reset")
+                React.createElement("input", {onChange: this.domainChanged, ref: "domain", autofocus: "autofocus", className: "search bu", type: "text", placeholder: "website"}), 
+
+                    React.createElement("button", {onClick: this.locate, className: "btn bg-primary btn-responsive bu " + this.state.domainDisabled}, "Locate"), 
+
+                    React.createElement("button", {onClick: this.locateMe, className: "btn btn-responsive bg-info bu"}, "My location"), 
+
+                    React.createElement("button", {onClick: this.reset, className: "btn btn-primary btn-responsive "}, "Reset")
+
             )
+
             )
-        );
+
+        )
     }
+})
 
-});
+},{"jquery":5,"react":176,"react-gmaps":16}],178:[function(require,module,exports){
+/**
+ * Created by taraskovtun on 2/18/16.
+ */
+var React = require('react');
+var ReactDOM = require('react-dom');
+var GeoLocator = require('./GeoLocator')
 
-ReactDOM.render(React.createElement(App, null), document.getElementById('app'));
+ReactDOM.render(React.createElement(GeoLocator, null), document.getElementById('app'));
 
-},{"jquery":5,"react":176,"react-dom":6,"react-gmaps":16}]},{},[177]);
+},{"./GeoLocator":177,"react":176,"react-dom":6}]},{},[178]);
