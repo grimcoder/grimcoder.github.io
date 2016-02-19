@@ -29749,7 +29749,7 @@ module.exports = React.createClass({displayName: "exports",
                 '</table>'
 
 
-            markers.push(React.createElement(InfoWindow, {key: "domain", title: "Home", label: "Home", content: content, 
+            markers.push(React.createElement(InfoWindow, {key: "myLocation", title: "Home", label: "Home", content: content, 
                                      lat: this.state.myLocation.lat, 
                                      lng: this.state.myLocation.lon}
             ))
